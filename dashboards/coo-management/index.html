@@ -127,8 +127,6 @@
         <button id="addM" type="button">+ місяць</button>
         <button id="delM" type="button">− місяць</button>
         <button id="reset" class="ghost" type="button">Приклад «ТехноСвіт»</button>
-        <button id="clear" class="ghost" type="button">Очистити</button>
-        <button id="share" class="ghost" type="button">Скопіювати посилання</button>
         <button id="print" class="ghost" type="button">Зберегти в PDF</button>
       </div>
     </div>
@@ -615,10 +613,6 @@ function onInput(e){
 
 /* ============================ ПОСИЛАННЯ ============================ */
 
-function toHash(){
-  try{ return "#d="+btoa(unescape(encodeURIComponent(JSON.stringify(S)))); }
-  catch(e){ return ""; }
-}
 function fromHash(){
   var m=location.hash.match(/#d=(.+)$/);
   if(!m) return false;
@@ -650,23 +644,6 @@ document.getElementById("delM").addEventListener("click",function(){
 });
 document.getElementById("reset").addEventListener("click",function(){
   S=clone(CASE); location.hash=""; rebuild();
-});
-document.getElementById("clear").addEventListener("click",function(){
-  var len=N();
-  S.months=[]; METRICS.forEach(function(m){ S[m.k]=[]; });
-  for(var i=0;i<len;i++){
-    S.months.push("Місяць "+(i+1));
-    METRICS.forEach(function(m){ S[m.k].push(0); });
-  }
-  location.hash=""; rebuild();
-});
-document.getElementById("share").addEventListener("click",function(){
-  var btn=this;
-  location.hash=toHash().slice(1);
-  var url=location.href;
-  var done=function(){ var t=btn.textContent; btn.textContent="Скопійовано"; setTimeout(function(){btn.textContent=t;},1600); };
-  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done,done);
-  else done();
 });
 document.getElementById("print").addEventListener("click",function(){ window.print(); });
 
