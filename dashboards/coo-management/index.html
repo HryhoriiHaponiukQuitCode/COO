@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Управлінський дашборд COO</title>
+<style>
+  :root{
+    --ink:#14202B;
+    --navy:#1F3B57;
+    --red:#9E3742;
+    --teal:#3D7F74;
+    --amber:#B5822A;
+    --grey:#8A9099;
+    --mute:#596168;
+    --hair:#DFE3E7;
+    --panel:#F5F7F8;
+    --bar:#B5BCC4;
+    --paper:#FFFFFF;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1060px;margin:0 auto;padding:34px 22px 70px}
+
+  /* ---------- шапка ---------- */
+  .masthead{border-bottom:2px solid #3A4149;padding-bottom:10px;margin-bottom:22px}
+  h1{font-size:26px;line-height:1.2;font-weight:700;margin:0 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--mute);font-size:13.5px;margin:0}
+
+  /* ---------- панель вводу ---------- */
+  .editor{border:1px solid var(--hair);background:var(--panel);padding:16px 16px 12px;margin-bottom:30px}
+  .editor-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;justify-content:space-between;margin-bottom:12px}
+  .editor-head h2{font-size:14px;font-weight:700;margin:0;text-transform:uppercase;letter-spacing:.07em}
+  .tools{display:flex;flex-wrap:wrap;gap:6px}
+  button{
+    font:inherit;font-size:12.5px;line-height:1;
+    padding:7px 11px;border:1px solid #C3C9CF;background:#fff;color:var(--ink);
+    border-radius:2px;cursor:pointer;
+  }
+  button:hover{border-color:var(--navy);color:var(--navy)}
+  button:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+  button.ghost{background:transparent}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.grid{border-collapse:collapse;width:100%;min-width:600px}
+  table.grid th,table.grid td{padding:4px 5px;text-align:right;font-size:13.5px}
+  table.grid th.rowlab,table.grid td.rowlab{text-align:left;white-space:nowrap;color:var(--mute);font-weight:400;padding-left:0;min-width:200px}
+  table.grid thead th{font-weight:700;color:var(--ink);border-bottom:1px solid #B4BBC2;padding-bottom:7px}
+  table.grid tbody tr+tr td{padding-top:3px}
+  input[type=text]{
+    font:inherit;font-size:13.5px;
+    font-variant-numeric:tabular-nums;
+    width:78px;padding:5px 7px;text-align:right;
+    border:1px solid #C9CFD5;background:#fff;color:var(--ink);border-radius:2px;
+  }
+  input[type=text]:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 2px rgba(31,59,87,.14)}
+  input.mon{width:82px;text-align:center;font-weight:700;border-color:transparent;background:transparent}
+  input.mon:focus{border-color:var(--navy);background:#fff}
+  .hint{color:var(--grey);font-size:12px;margin:10px 0 0}
+
+  /* ---------- блок питання ---------- */
+  .block{margin:0 0 40px}
+  .block-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;border-bottom:1px solid #6B737B;padding-bottom:8px;margin-bottom:0}
+  .qnum{font-size:12px;font-weight:700;color:var(--grey);letter-spacing:.1em;font-variant-numeric:tabular-nums}
+  .block-head h2{font-size:19px;font-weight:700;margin:0;flex:1 1 auto}
+  .verdict{font-size:14px;font-weight:700;white-space:nowrap}
+  .verdict-note{font-size:13.5px;color:var(--mute);margin:9px 0 0}
+
+  /* ---------- картки показників ---------- */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:0;margin-top:14px;border-top:1px solid var(--hair)}
+  .card{padding:11px 14px 12px 0;border-bottom:1px solid var(--hair)}
+  .card .lab{font-size:12px;color:var(--mute);line-height:1.3;min-height:2.6em}
+  .card .val{font-size:23px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin-top:3px}
+  .card .chg{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px}
+  .ok{color:var(--teal)} .warn{color:var(--amber)} .bad{color:var(--red)} .neu{color:var(--grey)}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:1px}
+  .dot.ok{background:var(--teal)} .dot.warn{background:var(--amber)} .dot.bad{background:var(--red)} .dot.neu{background:var(--bar)}
+
+  /* ---------- графіки ---------- */
+  .charts{display:grid;grid-template-columns:1fr;gap:6px;margin-top:18px}
+  .charts.two{grid-template-columns:1fr 1fr}
+  @media (max-width:720px){.charts.two{grid-template-columns:1fr}}
+  .chart{min-width:0}
+  .cap{font-size:12px;color:var(--mute);font-style:italic;margin:0 0 4px}
+  .chart .scroll svg{display:block;width:100%;min-width:420px;height:auto}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;margin:0 0 6px}
+  .legend span{white-space:nowrap;font-weight:700}
+
+  /* ---------- сигнали ---------- */
+  .signals{border:1px solid var(--hair);padding:14px 16px;margin-top:6px}
+  .signals h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin:0 0 9px;color:var(--mute)}
+  .signals ul{list-style:none;margin:0;padding:0}
+  .signals li{font-size:13.5px;padding:2px 0}
+  .signals li b{font-variant-numeric:tabular-nums}
+
+  footer{border-top:1px solid var(--hair);margin-top:44px;padding-top:14px;color:var(--grey);font-size:12px}
+
+  @media print{
+    .no-print{display:none!important}
+    body{font-size:11px}
+    .wrap{padding:0;max-width:none}
+    .block{break-inside:avoid}
+    .editor{background:transparent}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <h1 id="title">Управлінський дашборд COO</h1>
+    <p class="sub">Три питання, на які має відповідати один екран: <b>ми заробляємо</b>, <b>ми ефективні</b>, <b>у нас є гроші</b>. Введіть свої дані — показники, статуси і графіки перерахуються.</p>
+  </div>
+
+  <!-- ===================== ВВІД ===================== -->
+  <section class="editor no-print">
+    <div class="editor-head">
+      <h2>Вхідні дані</h2>
+      <div class="tools">
+        <button id="addM" type="button">+ місяць</button>
+        <button id="delM" type="button">− місяць</button>
+        <button id="reset" class="ghost" type="button">Приклад «ТехноСвіт»</button>
+        <button id="clear" class="ghost" type="button">Очистити</button>
+        <button id="share" class="ghost" type="button">Скопіювати посилання</button>
+        <button id="print" class="ghost" type="button">Зберегти в PDF</button>
+      </div>
+    </div>
+    <div class="scroll">
+      <table class="grid" id="grid"></table>
+    </div>
+    <p class="hint">Кома або крапка — байдуже. Відсотки вводьте числом: 32 означає 32%.</p>
+  </section>
+
+  <div id="out"></div>
+
+  <footer>
+    Розрахунки: валовий прибуток = виручка × Gross Margin · EBITDA = виручка × EBITDA Margin ·
+    OPEX у грошах = виручка × OPEX% · грошовий цикл = запаси + дебіторка − кредиторка ·
+    запас часу = каса ÷ середнє щомісячне спалювання за останні періоди.
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================ ДАНІ ============================ */
+
+var METRICS = [
+  {k:"rev",  lab:"Виручка, млн грн"},
+  {k:"gm",   lab:"Gross Margin, %"},
+  {k:"opex", lab:"OPEX, % від виручки"},
+  {k:"ebm",  lab:"EBITDA Margin, %"},
+  {k:"inv",  lab:"Запаси, днів обороту"},
+  {k:"ar",   lab:"Дебіторка, днів"},
+  {k:"ap",   lab:"Кредиторка, днів"},
+  {k:"cash", lab:"Гроші на рахунках, млн грн"}
+];
+
+var CASE = {
+  months:["Місяць 1","Місяць 2","Місяць 3","Місяць 4"],
+  rev :[82,88,95,102],
+  gm  :[32,30,27,24],
+  opex:[14,15,16.5,18],
+  ebm :[15,14,12,9],
+  inv :[38,45,53,61],
+  ar  :[30,33,39,46],
+  ap  :[40,39,38,37],
+  cash:[22,17,11,5]
+};
+
+var S = clone(CASE);
+
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function n(v){ return S[v]; }
+function N(){ return S.months.length; }
+
+/* ============================ ФОРМАТ ============================ */
+
+function num(v,d){
+  if(v===null||v===undefined||!isFinite(v)) return "—";
+  d = (d===undefined)?1:d;
+  var s = Math.abs(v).toFixed(d);
+  if(d>0) s = s.replace(/\.?0+$/,"");
+  s = s.replace(".",",");
+  var p = s.split(",");
+  p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g,"\u202F");
+  s = p.join(",");
+  return (v<0?"\u2212":"")+s;
+}
+function sgn(v,d,suffix){
+  if(v===null||v===undefined||!isFinite(v)) return "—";
+  suffix = suffix||"";
+  return (v>0?"+":"")+num(v,d)+suffix;
+}
+function pc(v,d){ return num(v,d===undefined?1:d)+"%"; }
+function pp(v){ return sgn(v,1," п.п."); }
+function wDays(v){
+  var a=Math.abs(Math.round(v)), t=a%100, d=a%10;
+  if(t>10&&t<20) return "днів";
+  if(d===1) return "день";
+  if(d>=2&&d<=4) return "дні";
+  return "днів";
+}
+function wPeriods(v){
+  var a=Math.abs(v);
+  if(a!==Math.floor(a)) return "періоду";
+  var t=a%100,d=a%10;
+  if(t>10&&t<20) return "періодів";
+  if(d===1) return "період";
+  if(d>=2&&d<=4) return "періоди";
+  return "періодів";
+}
+function dd(v){ return sgn(v,0," "+wDays(v)); }
+
+/* ============================ РОЗРАХУНКИ ============================ */
+
+function calc(){
+  var i, len=N(), c={};
+  c.len=len;
+  c.gp=[]; c.eb=[]; c.opexM=[]; c.ccc=[];
+  for(i=0;i<len;i++){
+    c.gp.push(n("rev")[i]*n("gm")[i]/100);
+    c.eb.push(n("rev")[i]*n("ebm")[i]/100);
+    c.opexM.push(n("rev")[i]*n("opex")[i]/100);
+    c.ccc.push(n("inv")[i]+n("ar")[i]-n("ap")[i]);
+  }
+  c.first=0; c.last=len-1;
+
+  function d(arr){ return arr[c.last]-arr[c.first]; }
+  function g(arr){ return arr[c.first]? (arr[c.last]/arr[c.first]-1)*100 : null; }
+
+  c.dRev=d(n("rev"));   c.gRev=g(n("rev"));
+  c.dGp =d(c.gp);       c.gGp =g(c.gp);
+  c.dEb =d(c.eb);       c.gEb =g(c.eb);
+  c.dGm =d(n("gm"));
+  c.dEbm=d(n("ebm"));
+  c.dOpex=d(n("opex")); c.gOpexM=g(c.opexM);
+  c.dInv=d(n("inv"));
+  c.dAr =d(n("ar"));
+  c.dAp =d(n("ap"));
+  c.dCcc=d(c.ccc);
+  c.dCash=d(n("cash"));
+  c.empty = n("rev").every(function(v){ return !v; });
+
+  // спалювання: середнє за останніми змінами каси (до 3)
+  var deltas=[], k;
+  for(k=Math.max(1,len-3);k<len;k++) deltas.push(n("cash")[k]-n("cash")[k-1]);
+  c.flow = deltas.length? deltas.reduce(function(a,b){return a+b;},0)/deltas.length : 0;
+  c.burn = c.flow<0 ? -c.flow : 0;
+  c.runway = c.burn>0 ? n("cash")[c.last]/c.burn : null;
+
+  return c;
+}
+
+/* ---------- статуси ---------- */
+// badWhen: "up" — погано коли росте, "down" — погано коли падає
+function stat(delta, badWhen, warn, crit){
+  if(delta===null||!isFinite(delta)) return "neu";
+  var x = badWhen==="up" ? delta : -delta;
+  if(x>=crit) return "bad";
+  if(x>=warn) return "warn";
+  if(x<=-warn) return "ok";
+  return "neu";
+}
+var WORD={ok:"Норма",warn:"Увага",bad:"Критично",neu:"Стабільно"};
+
+/* ============================ SVG ============================ */
+
+var COL={navy:"#1F3B57",red:"#9E3742",teal:"#3D7F74",bar:"#B5BCC4",grid:"#E2E5E8",txt:"#4A525B",mute:"#8A9099"};
+
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function ticks(min,max,cnt){
+  cnt=cnt||3;
+  if(!isFinite(min)||!isFinite(max)) return [0,1];
+  if(max===min){ max=min+1; }
+  var span=max-min, raw=span/cnt;
+  var mag=Math.pow(10,Math.floor(Math.log10(raw)));
+  var nm=raw/mag;
+  var step=(nm<=1?1:nm<=2?2:nm<=5?5:10)*mag;
+  var lo=Math.floor(min/step)*step, hi=Math.ceil(max/step)*step;
+  var out=[],v;
+  for(v=lo;v<=hi+step*1e-6;v+=step) out.push(+v.toFixed(8));
+  return out;
+}
+
+function frame(w,h,pad,tk,fmt){
+  var y0=pad.t, y1=h-pad.b;
+  var lo=tk[0], hi=tk[tk.length-1];
+  var Y=function(v){ return y1-(v-lo)/(hi-lo)*(y1-y0); };
+  var g="",i;
+  for(i=0;i<tk.length;i++){
+    var y=Y(tk[i]);
+    g+='<line x1="'+pad.l+'" y1="'+y.toFixed(1)+'" x2="'+(w-pad.r)+'" y2="'+y.toFixed(1)+'" stroke="'+COL.grid+'" stroke-width="1.4"/>';
+    g+='<text x="'+(pad.l-9)+'" y="'+(y+5).toFixed(1)+'" text-anchor="end" font-size="15" fill="'+COL.txt+'">'+esc(fmt(tk[i]))+'</text>';
+  }
+  return {g:g,Y:Y,y0:y0,y1:y1};
+}
+
+function xband(w,pad,len){
+  var x0=pad.l, x1=w-pad.r, step=(x1-x0)/len;
+  return {c:function(i){ return x0+step*(i+0.5); }, step:step, x0:x0, x1:x1};
+}
+
+function xlabels(labs,X,y){
+  var s="",i;
+  for(i=0;i<labs.length;i++)
+    s+='<text x="'+X.c(i).toFixed(1)+'" y="'+y+'" text-anchor="middle" font-size="15" fill="'+COL.txt+'">'+esc(labs[i])+'</text>';
+  return s;
+}
+
+function lineChart(series, labs, fmtY, opt){
+  opt=opt||{};
+  var w=1000,h=opt.h||320,pad={l:66,r:opt.r||26,t:26,b:44};
+  var all=[],i,j;
+  for(i=0;i<series.length;i++) for(j=0;j<series[i].v.length;j++) if(isFinite(series[i].v[j])) all.push(series[i].v[j]);
+  if(!all.length) all=[0,1];
+  var mn=Math.min.apply(null,all), mx=Math.max.apply(null,all);
+  var padv=(mx-mn)*0.18 || 1;
+  var tk=ticks(mn-padv,mx+padv,3);
+  var F=frame(w,h,pad,tk,fmtY);
+  var X=xband(w,pad,labs.length);
+  var s='<line x1="'+pad.l+'" y1="'+F.y1+'" x2="'+(w-pad.r)+'" y2="'+F.y1+'" stroke="'+COL.mute+'" stroke-width="1.4"/>';
+  s=F.g+s;
+  var tags=[];
+  for(i=0;i<series.length;i++){
+    var se=series[i],pts=[];
+    for(j=0;j<se.v.length;j++) pts.push(X.c(j).toFixed(1)+","+F.Y(se.v[j]).toFixed(1));
+    s+='<polyline points="'+pts.join(" ")+'" fill="none" stroke="'+se.c+'" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>';
+    for(j=0;j<se.v.length;j++)
+      s+='<circle cx="'+X.c(j).toFixed(1)+'" cy="'+F.Y(se.v[j]).toFixed(1)+'" r="5" fill="'+se.c+'"/>';
+    tags.push({x:X.c(se.v.length-1), y:F.Y(se.v[se.v.length-1])-14, c:se.c, t:se.tag});
+  }
+  tags.sort(function(a,b){ return a.y-b.y; });
+  for(i=1;i<tags.length;i++) if(tags[i].y-tags[i-1].y<24) tags[i].y=tags[i-1].y+24;
+  var shift=Math.max(0,tags.length?tags[tags.length-1].y-(h-pad.b-6):0);
+  for(i=0;i<tags.length;i++){
+    var tg=tags[i], ty=Math.max(18,tg.y-shift);
+    s+='<text x="'+tg.x.toFixed(1)+'" y="'+ty.toFixed(1)+'" text-anchor="middle" font-size="16" font-weight="700" fill="'+tg.c+'">'+esc(tg.t)+'</text>';
+  }
+  s+=xlabels(labs,X,h-14);
+  return '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg" role="img">'+s+'</svg>';
+}
+
+function barChart(vals, labs, fmtY, opt){
+  opt=opt||{};
+  var w=1000,h=opt.h||320,pad={l:66,r:26,t:34,b:44};
+  var clean=vals.filter(isFinite);
+  if(!clean.length) clean=[0,1];
+  var mn=Math.min(0,Math.min.apply(null,clean));
+  var mx=Math.max.apply(null,clean);
+  var hi=Math.max(mx*1.16, mn+1, 0.001);
+  var tk=ticks(mn,hi,3);
+  var F=frame(w,h,pad,tk,fmtY);
+  var X=xband(w,pad,labs.length);
+  var bw=Math.min(X.step*0.5,86);
+  var s=F.g,i;
+  var zero=F.Y(0);
+  for(i=0;i<vals.length;i++){
+    if(!isFinite(vals[i])) continue;
+    var y=F.Y(vals[i]);
+    var top=Math.min(y,zero), hh=Math.max(Math.abs(zero-y),2);
+    var c = opt.colors? opt.colors[i] : COL.navy;
+    s+='<rect x="'+(X.c(i)-bw/2).toFixed(1)+'" y="'+top.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+hh.toFixed(1)+'" fill="'+c+'"/>';
+    var ly = vals[i]>=0 ? top-11 : top+hh+22;
+    s+='<text x="'+X.c(i).toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="middle" font-size="17" font-weight="700" fill="'+COL.txt+'">'+esc(opt.fmtV?opt.fmtV(vals[i]):num(vals[i],1))+'</text>';
+  }
+  if(opt.proj && isFinite(opt.proj.v)){
+    var xa=X.c(vals.length-1), xb=X.c(vals.length-1)+X.step;
+    var ya=F.Y(vals[vals.length-1]), yb=F.Y(Math.max(opt.proj.v,tk[0]));
+    s+='<line x1="'+xa.toFixed(1)+'" y1="'+ya.toFixed(1)+'" x2="'+xb.toFixed(1)+'" y2="'+yb.toFixed(1)+'" stroke="'+COL.red+'" stroke-width="2.6" stroke-dasharray="7 6"/>';
+    s+='<circle cx="'+xb.toFixed(1)+'" cy="'+yb.toFixed(1)+'" r="5" fill="'+COL.red+'"/>';
+    s+='<text x="'+xb.toFixed(1)+'" y="'+(yb-13).toFixed(1)+'" text-anchor="middle" font-size="16" font-weight="700" fill="'+COL.red+'">'+esc(opt.proj.tag)+'</text>';
+  }
+  s+='<line x1="'+pad.l+'" y1="'+zero.toFixed(1)+'" x2="'+(w-pad.r)+'" y2="'+zero.toFixed(1)+'" stroke="'+COL.mute+'" stroke-width="1.4"/>';
+  s+=xlabels(labs,X,h-14);
+  return '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg" role="img">'+s+'</svg>';
+}
+
+/* ============================ ВЕРСТКА БЛОКІВ ============================ */
+
+function card(lab,val,chg,st){
+  return '<div class="card"><div class="lab">'+esc(lab)+'</div>'+
+         '<div class="val">'+val+'</div>'+
+         '<div class="chg '+st+'"><span class="dot '+st+'"></span>'+chg+'</div></div>';
+}
+
+function block(numTag,title,verdict,vstat,note,cards,chartsHtml,signals){
+  return '<section class="block">'+
+    '<div class="block-head">'+
+      '<span class="qnum">'+numTag+'</span>'+
+      '<h2>'+esc(title)+'</h2>'+
+      '<span class="verdict '+vstat+'">'+esc(verdict)+'</span>'+
+    '</div>'+
+    '<p class="verdict-note">'+String(note).replace(/\.\s*\./g,".")+'</p>'+
+    '<div class="cards">'+cards+'</div>'+
+    chartsHtml+
+    (signals||"")+
+  '</section>';
+}
+
+function chartBox(cap,legend,svg){
+  return '<div class="chart"><p class="cap">'+esc(cap)+'</p>'+(legend||"")+'<div class="scroll">'+svg+'</div></div>';
+}
+
+function legend(items){
+  var s='<div class="legend">',i;
+  for(i=0;i<items.length;i++)
+    s+='<span style="color:'+items[i].c+'">'+esc(items[i].t)+'</span>';
+  return s+'</div>';
+}
+
+/* ============================ РЕНДЕР ============================ */
+
+function render(){
+  var c=calc(), L=S.months, last=c.last;
+  var out=[];
+
+  /* ---------- 1. Ми заробляємо? ---------- */
+  (function(){
+    var verdict,vst,note;
+    if(c.empty){
+      verdict="Немає даних"; vst="neu";
+      note="Заповніть таблицю вище — показники і графіки з’являться одразу.";
+    } else if(c.gRev>1 && c.gGp<-1){
+      verdict="Ні"; vst="bad";
+      note="Виручка <b>"+sgn(c.gRev,0,"%")+"</b>, валовий прибуток <b>"+sgn(c.gGp,0,"%")+"</b>. Зростання не доходить до прибутку: маржа "+pp(c.dGm)+", EBITDA Margin "+pp(c.dEbm)+".";
+    } else if(c.gRev<-1){
+      verdict="Ні"; vst="bad";
+      note="Виручка <b>"+sgn(c.gRev,0,"%")+"</b>, валовий прибуток <b>"+sgn(c.gGp,0,"%")+"</b>. Це питання до продажів, а не лише до маржі.";
+    } else if(c.dEbm<-1){
+      verdict="Частково"; vst="warn";
+      note="Валовий прибуток тримається (<b>"+sgn(c.gGp,0,"%")+"</b>), але EBITDA Margin втратила <b>"+num(Math.abs(c.dEbm),1)+" п.п.</b> — прибуток з’їдають витрати нижче валового рядка.";
+    } else {
+      verdict="Так"; vst="ok";
+      note="Виручка <b>"+sgn(c.gRev,0,"%")+"</b>, валовий прибуток <b>"+sgn(c.gGp,0,"%")+"</b>, EBITDA Margin "+pp(c.dEbm)+". Зростання доходить до прибутку.";
+    }
+
+    var cards=
+      card("Виручка, млн грн", num(n("rev")[last],0), sgn(c.gRev,0,"%"), stat(c.gRev,"down",0,5))+
+      card("Валовий прибуток, млн грн", num(c.gp[last],1), sgn(c.gGp,0,"%"), stat(c.gGp,"down",3,8))+
+      card("Gross Margin", pc(n("gm")[last]), pp(c.dGm), stat(c.dGm,"down",1,3))+
+      card("EBITDA, млн грн", num(c.eb[last],1), sgn(c.gEb,0,"%"), stat(c.gEb,"down",5,15))+
+      card("EBITDA Margin", pc(n("ebm")[last]), pp(c.dEbm), stat(c.dEbm,"down",1,3));
+
+    var idx=function(a){ var r=[],i; for(i=0;i<a.length;i++) r.push(a[0]? a[i]/a[0]*100 : 100); return r; };
+    var ch=chartBox(
+      "Виручка, валовий прибуток і EBITDA — індекс, перший період = 100",
+      legend([{c:COL.navy,t:"Виручка"},{c:COL.bar,t:"Валовий прибуток"},{c:COL.red,t:"EBITDA"}]),
+      lineChart([
+        {v:idx(n("rev")),c:COL.navy,tag:sgn(c.gRev,0,"%")},
+        {v:idx(c.gp),    c:COL.bar, tag:sgn(c.gGp,0,"%")},
+        {v:idx(c.eb),    c:COL.red, tag:sgn(c.gEb,0,"%")}
+      ],L,function(v){return num(v,0);},{h:330})
+    );
+
+    out.push(block("01","Ми заробляємо?",verdict,vst,note,cards,'<div class="charts">'+ch+'</div>'));
+  })();
+
+  /* ---------- 2. Ми ефективні? ---------- */
+  (function(){
+    var verdict,vst,notes=[];
+    if(c.dOpex>0.5) notes.push("OPEX виріс з "+pc(n("opex")[0])+" до "+pc(n("opex")[last])+" від виручки ("+pp(c.dOpex)+")");
+    if(c.gOpexM!==null && c.gRev!==null && c.gOpexM>c.gRev+3) notes.push("у грошах витрати ростуть швидше за виручку: <b>"+sgn(c.gOpexM,0,"%")+"</b> проти <b>"+sgn(c.gRev,0,"%")+"</b>");
+    if(c.dInv>3) notes.push("товар лежить довше: запаси "+num(n("inv")[0],0)+" → "+num(n("inv")[last],0)+" "+wDays(n("inv")[last]));
+    if(c.dGm<-1) notes.push("валова маржа "+pp(c.dGm));
+
+    var badCount=(c.dOpex>2?1:0)+(c.dInv>10?1:0)+(c.dGm<-2?1:0);
+    if(c.empty){ verdict="Немає даних"; vst="neu"; notes=[]; }
+    else if(badCount>=2){ verdict="Ні"; vst="bad"; }
+    else if(notes.length){ verdict="Погіршується"; vst="warn"; }
+    else { verdict="Так"; vst="ok"; }
+
+    var note = c.empty ? "Заповніть таблицю вище." : notes.length
+      ? notes.join("; ").replace(/^./,function(m){return m.toUpperCase();})+"."
+      : "OPEX "+pp(c.dOpex)+", запаси "+dd(c.dInv)+", маржа "+pp(c.dGm)+". Ефективність не погіршується.";
+
+    var cards=
+      card("OPEX, % від виручки", pc(n("opex")[last]), pp(c.dOpex), stat(c.dOpex,"up",1,3))+
+      card("OPEX, млн грн", num(c.opexM[last],1), sgn(c.gOpexM,0,"%"), stat((c.gOpexM||0)-(c.gRev||0),"up",5,15))+
+      card("Запаси, днів обороту", num(n("inv")[last],0), sgn(c.dInv,0," дн."), stat(c.dInv,"up",5,15))+
+      card("Gross Margin", pc(n("gm")[last]), pp(c.dGm), stat(c.dGm,"down",1,3));
+
+    var ch1=chartBox(
+      "Маржа і витрати, % від виручки",
+      legend([{c:COL.navy,t:"Gross Margin"},{c:COL.red,t:"OPEX"}]),
+      lineChart([
+        {v:n("gm"),  c:COL.navy,tag:pc(n("gm")[last],0)},
+        {v:n("opex"),c:COL.red, tag:pc(n("opex")[last],0)}
+      ],L,function(v){return num(v,0)+"%";},{h:340})
+    );
+    var invColors=n("inv").map(function(v,i){ return i===0?COL.bar:(v>n("inv")[0]?COL.red:COL.teal); });
+    var ch2=chartBox(
+      "Запаси, днів обороту",null,
+      barChart(n("inv"),L,function(v){return num(v,0);},{colors:invColors,fmtV:function(v){return num(v,0);},h:340})
+    );
+
+    out.push(block("02","Ми ефективні?",verdict,vst,note,cards,'<div class="charts two">'+ch1+ch2+'</div>'));
+  })();
+
+  /* ---------- 3. У нас є гроші? ---------- */
+  (function(){
+    var verdict,vst,note;
+    var cashLast=n("cash")[last];
+    if(c.empty){
+      verdict="Немає даних"; vst="neu";
+      note="Заповніть таблицю вище.";
+    } else if(c.flow<0 && c.runway!==null && c.runway<3){
+      verdict="Ні"; vst="bad";
+      note="Каса впала з <b>"+num(n("cash")[0],0)+"</b> до <b>"+num(cashLast,0)+"</b> млн грн. При спалюванні <b>"+num(c.burn,1)+"</b> млн на період грошей вистачить приблизно на <b>"+num(c.runway,1)+"</b> "+wPeriods(c.runway)+". Грошовий цикл "+dd(c.dCcc)+".";
+    } else if(c.flow<0){
+      verdict="Поки так"; vst="warn";
+      note="Каса скорочується на <b>"+num(c.burn,1)+"</b> млн за період; запасу — близько <b>"+num(c.runway,1)+"</b> "+wPeriods(c.runway)+". Грошовий цикл "+dd(c.dCcc)+".";
+    } else if(c.dCcc>10){
+      verdict="Поки так"; vst="warn";
+      note="Каса тримається, але грошовий цикл виріс на <b>"+num(c.dCcc,0)+"</b> "+wDays(c.dCcc)+" — все більше грошей осідає в запасах і дебіторці.";
+    } else {
+      verdict="Так"; vst="ok";
+      note="Каса "+sgn(c.dCash,0," млн")+", грошовий цикл "+dd(c.dCcc)+". Оборотний капітал не з’їдає прибуток.";
+    }
+
+    var cards=
+      card("Гроші на рахунках, млн грн", num(cashLast,0), sgn(c.dCash,0," млн"), stat(c.dCash,"down",2,6))+
+      card("Запас часу, періодів", c.runway===null?"—":num(c.runway,1), c.runway===null?"каса не падає":"при поточному темпі", c.runway===null?"ok":(c.runway<2?"bad":c.runway<4?"warn":"ok"))+
+      card("Грошовий цикл, днів", num(c.ccc[last],0), sgn(c.dCcc,0," дн."), stat(c.dCcc,"up",7,20))+
+      card("Дебіторка, днів", num(n("ar")[last],0), sgn(c.dAr,0," дн."), stat(c.dAr,"up",5,15))+
+      card("Кредиторка, днів", num(n("ap")[last],0), sgn(c.dAp,0," дн."), stat(c.dAp,"down",3,10));
+
+    var cccColors=c.ccc.map(function(v,i){ return i===0?COL.bar:(v>c.ccc[0]?COL.red:COL.teal); });
+    var ch1=chartBox("Грошовий цикл, днів",null,
+      barChart(c.ccc,L,function(v){return num(v,0);},{colors:cccColors,fmtV:function(v){return num(v,0);},h:340}));
+
+    var projV = c.flow<0 ? Math.max(cashLast+c.flow,0) : null;
+    var ch2=chartBox("Гроші на рахунках, млн грн",null,
+      barChart(n("cash"),L,function(v){return num(v,0);},{
+        colors:n("cash").map(function(){return COL.navy;}),
+        fmtV:function(v){return num(v,0);},
+        h:340,
+        proj: projV!==null ? {v:projV,tag:num(projV,0)} : null
+      }));
+
+    var sig=signals(c);
+    out.push(block("03","У нас є гроші?",verdict,vst,note,cards,'<div class="charts two">'+ch1+ch2+'</div>',sig));
+  })();
+
+  document.getElementById("out").innerHTML=out.join("");
+}
+
+/* ---------- сигнали ---------- */
+function signals(c){
+  var rows=[];
+  function add(st,txt){ rows.push('<li><span class="dot '+st+'"></span>'+txt+'</li>'); }
+  add(stat(c.gRev,"down",0,5),"Виручка <b>"+sgn(c.gRev,0,"%")+"</b>");
+  add(stat(c.dGm,"down",1,3),"Gross Margin <b>"+pp(c.dGm)+"</b>");
+  add(stat(c.dEbm,"down",1,3),"EBITDA Margin <b>"+pp(c.dEbm)+"</b>");
+  add(stat(c.dOpex,"up",1,3),"OPEX, % від виручки <b>"+pp(c.dOpex)+"</b>");
+  add(stat(c.dInv,"up",5,15),"Запаси <b>"+dd(c.dInv)+"</b>");
+  add(stat(c.dAr,"up",5,15),"Дебіторка <b>"+dd(c.dAr)+"</b>");
+  add(stat(c.dAp,"down",3,10),"Кредиторка <b>"+dd(c.dAp)+"</b>");
+  add(stat(c.dCcc,"up",7,20),"Грошовий цикл <b>"+dd(c.dCcc)+"</b>");
+  add(stat(c.dCash,"down",2,6),"Гроші на рахунках <b>"+sgn(c.dCash,0," млн")+"</b>");
+  var order={bad:0,warn:1,neu:2,ok:3};
+  rows.sort(function(a,b){
+    var ka=a.match(/dot (\w+)/)[1], kb=b.match(/dot (\w+)/)[1];
+    return order[ka]-order[kb];
+  });
+  return '<div class="signals"><h3>Сигнали</h3><ul>'+rows.join("")+'</ul></div>';
+}
+
+/* ============================ ТАБЛИЦЯ ВВОДУ ============================ */
+
+function parse(v){
+  if(typeof v!=="string") return v;
+  v=v.trim().replace(/\u2212/g,"-").replace(/\s|\u202F|\u00A0/g,"").replace(",",".");
+  if(v==="") return 0;
+  var x=parseFloat(v);
+  return isFinite(x)?x:0;
+}
+
+function buildGrid(){
+  var t=document.getElementById("grid"),i,j,h="";
+  h+='<thead><tr><th class="rowlab">Показник</th>';
+  for(i=0;i<N();i++)
+    h+='<th><input class="mon" type="text" data-mon="'+i+'" value="'+esc(S.months[i])+'" aria-label="Назва періоду '+(i+1)+'"></th>';
+  h+='</tr></thead><tbody>';
+  for(j=0;j<METRICS.length;j++){
+    var m=METRICS[j];
+    h+='<tr><td class="rowlab">'+esc(m.lab)+'</td>';
+    for(i=0;i<N();i++)
+      h+='<td><input type="text" inputmode="decimal" data-k="'+m.k+'" data-i="'+i+'" value="'+num(S[m.k][i],2)+'" aria-label="'+esc(m.lab)+', період '+(i+1)+'"></td>';
+    h+='</tr>';
+  }
+  h+='</tbody>';
+  t.innerHTML=h;
+}
+
+function onInput(e){
+  var el=e.target;
+  if(el.dataset.mon!==undefined){
+    S.months[+el.dataset.mon]=el.value||("Період "+(+el.dataset.mon+1));
+    render(); return;
+  }
+  if(el.dataset.k){
+    S[el.dataset.k][+el.dataset.i]=parse(el.value);
+    render();
+  }
+}
+
+/* ============================ ПОСИЛАННЯ ============================ */
+
+function toHash(){
+  try{ return "#d="+btoa(unescape(encodeURIComponent(JSON.stringify(S)))); }
+  catch(e){ return ""; }
+}
+function fromHash(){
+  var m=location.hash.match(/#d=(.+)$/);
+  if(!m) return false;
+  try{
+    var o=JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+    if(!o.months||!o.months.length) return false;
+    S=o; return true;
+  }catch(e){ return false; }
+}
+
+/* ============================ ПОДІЇ ============================ */
+
+function rebuild(){ buildGrid(); render(); }
+
+document.getElementById("grid").addEventListener("input",onInput);
+
+document.getElementById("addM").addEventListener("click",function(){
+  if(N()>=12) return;
+  var i=N();
+  S.months.push("Місяць "+(i+1));
+  METRICS.forEach(function(m){ S[m.k].push(S[m.k][i-1]); });
+  rebuild();
+});
+document.getElementById("delM").addEventListener("click",function(){
+  if(N()<=2) return;
+  S.months.pop();
+  METRICS.forEach(function(m){ S[m.k].pop(); });
+  rebuild();
+});
+document.getElementById("reset").addEventListener("click",function(){
+  S=clone(CASE); location.hash=""; rebuild();
+});
+document.getElementById("clear").addEventListener("click",function(){
+  var len=N();
+  S.months=[]; METRICS.forEach(function(m){ S[m.k]=[]; });
+  for(var i=0;i<len;i++){
+    S.months.push("Місяць "+(i+1));
+    METRICS.forEach(function(m){ S[m.k].push(0); });
+  }
+  location.hash=""; rebuild();
+});
+document.getElementById("share").addEventListener("click",function(){
+  var btn=this;
+  location.hash=toHash().slice(1);
+  var url=location.href;
+  var done=function(){ var t=btn.textContent; btn.textContent="Скопійовано"; setTimeout(function(){btn.textContent=t;},1600); };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done,done);
+  else done();
+});
+document.getElementById("print").addEventListener("click",function(){ window.print(); });
+
+/* ============================ СТАРТ ============================ */
+fromHash();
+rebuild();
+
+})();
+</script>
+</body>
+</html>
