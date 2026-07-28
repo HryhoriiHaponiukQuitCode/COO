@@ -116,7 +116,7 @@
 
   <div class="masthead">
     <h1 id="title">Управлінський дашборд COO</h1>
-    <p class="sub">Три питання, на які має відповідати один екран: <b>ми заробляємо</b>, <b>ми ефективні</b>, <b>у нас є гроші</b>. Введіть свої дані — показники, статуси і графіки перерахуються.</p>
+    <p class="sub">Три питання, на які має відповідати один екран: <b>ми заробляємо</b>, <b>ми ефективні</b>, <b>у нас є гроші</b>. Введіть свої дані - показники, статуси і графіки перерахуються.</p>
   </div>
 
   <!-- ===================== ВВІД ===================== -->
@@ -135,7 +135,6 @@
     <div class="scroll">
       <table class="grid" id="grid"></table>
     </div>
-    <p class="hint">Кома або крапка — байдуже. Відсотки вводьте числом: 32 означає 32%.</p>
   </section>
 
   <div id="out"></div>
@@ -185,7 +184,7 @@ function N(){ return S.months.length; }
 /* ============================ ФОРМАТ ============================ */
 
 function num(v,d){
-  if(v===null||v===undefined||!isFinite(v)) return "—";
+  if(v===null||v===undefined||!isFinite(v)) return "-";
   d = (d===undefined)?1:d;
   var s = Math.abs(v).toFixed(d);
   if(d>0) s = s.replace(/\.?0+$/,"");
@@ -196,7 +195,7 @@ function num(v,d){
   return (v<0?"\u2212":"")+s;
 }
 function sgn(v,d,suffix){
-  if(v===null||v===undefined||!isFinite(v)) return "—";
+  if(v===null||v===undefined||!isFinite(v)) return "-";
   suffix = suffix||"";
   return (v>0?"+":"")+num(v,d)+suffix;
 }
@@ -261,7 +260,7 @@ function calc(){
 }
 
 /* ---------- статуси ---------- */
-// badWhen: "up" — погано коли росте, "down" — погано коли падає
+// badWhen: "up" - погано коли росте, "down" - погано коли падає
 function stat(delta, badWhen, warn, crit){
   if(delta===null||!isFinite(delta)) return "neu";
   var x = badWhen==="up" ? delta : -delta;
@@ -429,7 +428,7 @@ function render(){
     var verdict,vst,note;
     if(c.empty){
       verdict="Немає даних"; vst="neu";
-      note="Заповніть таблицю вище — показники і графіки з’являться одразу.";
+      note="Заповніть таблицю вище - показники і графіки з’являться одразу.";
     } else if(c.gRev>1 && c.gGp<-1){
       verdict="Ні"; vst="bad";
       note="Виручка <b>"+sgn(c.gRev,0,"%")+"</b>, валовий прибуток <b>"+sgn(c.gGp,0,"%")+"</b>. Зростання не доходить до прибутку: маржа "+pp(c.dGm)+", EBITDA Margin "+pp(c.dEbm)+".";
@@ -438,7 +437,7 @@ function render(){
       note="Виручка <b>"+sgn(c.gRev,0,"%")+"</b>, валовий прибуток <b>"+sgn(c.gGp,0,"%")+"</b>. Це питання до продажів, а не лише до маржі.";
     } else if(c.dEbm<-1){
       verdict="Частково"; vst="warn";
-      note="Валовий прибуток тримається (<b>"+sgn(c.gGp,0,"%")+"</b>), але EBITDA Margin втратила <b>"+num(Math.abs(c.dEbm),1)+" п.п.</b> — прибуток з’їдають витрати нижче валового рядка.";
+      note="Валовий прибуток тримається (<b>"+sgn(c.gGp,0,"%")+"</b>), але EBITDA Margin втратила <b>"+num(Math.abs(c.dEbm),1)+" п.п.</b> - прибуток з’їдають витрати нижче валового рядка.";
     } else {
       verdict="Так"; vst="ok";
       note="Виручка <b>"+sgn(c.gRev,0,"%")+"</b>, валовий прибуток <b>"+sgn(c.gGp,0,"%")+"</b>, EBITDA Margin "+pp(c.dEbm)+". Зростання доходить до прибутку.";
@@ -453,7 +452,7 @@ function render(){
 
     var idx=function(a){ var r=[],i; for(i=0;i<a.length;i++) r.push(a[0]? a[i]/a[0]*100 : 100); return r; };
     var ch=chartBox(
-      "Виручка, валовий прибуток і EBITDA — індекс, перший період = 100",
+      "Виручка, валовий прибуток і EBITDA - індекс, перший період = 100",
       legend([{c:COL.navy,t:"Виручка"},{c:COL.bar,t:"Валовий прибуток"},{c:COL.red,t:"EBITDA"}]),
       lineChart([
         {v:idx(n("rev")),c:COL.navy,tag:sgn(c.gRev,0,"%")},
@@ -518,10 +517,10 @@ function render(){
       note="Каса впала з <b>"+num(n("cash")[0],0)+"</b> до <b>"+num(cashLast,0)+"</b> млн грн. При спалюванні <b>"+num(c.burn,1)+"</b> млн на період грошей вистачить приблизно на <b>"+num(c.runway,1)+"</b> "+wPeriods(c.runway)+". Грошовий цикл "+dd(c.dCcc)+".";
     } else if(c.flow<0){
       verdict="Поки так"; vst="warn";
-      note="Каса скорочується на <b>"+num(c.burn,1)+"</b> млн за період; запасу — близько <b>"+num(c.runway,1)+"</b> "+wPeriods(c.runway)+". Грошовий цикл "+dd(c.dCcc)+".";
+      note="Каса скорочується на <b>"+num(c.burn,1)+"</b> млн за період; запасу - близько <b>"+num(c.runway,1)+"</b> "+wPeriods(c.runway)+". Грошовий цикл "+dd(c.dCcc)+".";
     } else if(c.dCcc>10){
       verdict="Поки так"; vst="warn";
-      note="Каса тримається, але грошовий цикл виріс на <b>"+num(c.dCcc,0)+"</b> "+wDays(c.dCcc)+" — все більше грошей осідає в запасах і дебіторці.";
+      note="Каса тримається, але грошовий цикл виріс на <b>"+num(c.dCcc,0)+"</b> "+wDays(c.dCcc)+" - все більше грошей осідає в запасах і дебіторці.";
     } else {
       verdict="Так"; vst="ok";
       note="Каса "+sgn(c.dCash,0," млн")+", грошовий цикл "+dd(c.dCcc)+". Оборотний капітал не з’їдає прибуток.";
@@ -529,7 +528,7 @@ function render(){
 
     var cards=
       card("Гроші на рахунках, млн грн", num(cashLast,0), sgn(c.dCash,0," млн"), stat(c.dCash,"down",2,6))+
-      card("Запас часу, періодів", c.runway===null?"—":num(c.runway,1), c.runway===null?"каса не падає":"при поточному темпі", c.runway===null?"ok":(c.runway<2?"bad":c.runway<4?"warn":"ok"))+
+      card("Запас часу, періодів", c.runway===null?"-":num(c.runway,1), c.runway===null?"каса не падає":"при поточному темпі", c.runway===null?"ok":(c.runway<2?"bad":c.runway<4?"warn":"ok"))+
       card("Грошовий цикл, днів", num(c.ccc[last],0), sgn(c.dCcc,0," дн."), stat(c.dCcc,"up",7,20))+
       card("Дебіторка, днів", num(n("ar")[last],0), sgn(c.dAr,0," дн."), stat(c.dAr,"up",5,15))+
       card("Кредиторка, днів", num(n("ap")[last],0), sgn(c.dAp,0," дн."), stat(c.dAp,"down",3,10));
